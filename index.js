@@ -3,7 +3,7 @@ function getUniqueId(){
     let id=0;
     if(localStorage.length==0)
         return 1;
-    let max = parseInt(localStorage.key(1));
+    let max = 1;
     for(x in localStorage){
         if(x=='length'){
             // console.log("ID:"+id, parseInt(id)+1)
