@@ -7,6 +7,7 @@ function getUniqueId(){
     for(x in localStorage){
         if(x=='length'){
             // console.log("ID:"+id, parseInt(id)+1)
+            console.log(max);
             return max+1;
         }
         if(max<parseInt(x))
@@ -19,6 +20,8 @@ function getUniqueId(){
 
 //submit button
 let form = document.querySelector('#form-id');
+
+document.addEventListener('DOMContentLoaded', loadAllItems);
 
 //list of expenses
 let itemList = document.querySelector('ul');
@@ -129,6 +132,21 @@ function deleteInLocalStorage(id){
         if(parseInt(x)==parseInt(id)){
             localStorage.removeItem(x); 
             return;
+        }
+    }
+}
+
+
+function loadAllItems(){
+    for(x in localStorage){
+        if(x==='length')
+            break;
+        else{
+            let obj = JSON.parse(localStorage.getItem(x));
+            // console.log(obj)
+            // console.log(parseInt(x), obj.amnt, obj.typ, obj.dsc);
+            let li = createNewLi(parseInt(x), obj.amnt, obj.typ, obj.dsc);
+            itemList.appendChild(li);
         }
     }
 }
