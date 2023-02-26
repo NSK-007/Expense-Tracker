@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
     <title>Expense Tracker</title>
 </head>
 <body>
@@ -19,7 +20,7 @@
         <h4>Add Expenses</h4>
         <div id="error"></div>
         <form name="form-body" id="form-id" class="form-inline mb-3">
-            <input placeholder="Amount" type="number" name="amount" class="form-control mr-2" id="itemNum">
+            <input placeholder="Amount" type="text" name="amount" class="form-control mr-2" id="itemNum">
             <input placeholder="Description" name="desc" type="text" class="form-control mr-2" id="itemDesc">
             <div class="form-group">
                 <select name="type" class="custom-select" id="itemType">
@@ -29,11 +30,12 @@
                     <option  value="Movie">Movie</option>
                 </select>
             </div>&nbsp;&nbsp;&nbsp;
-            <input id="add_exp" type="submit" class="btn btn-dark" value="Submit">
+            <input id="submit_btn" type="submit" class="btn btn-dark" value="Submit">
+            <input id="update_exp" type="button" name="update_btn" class="btn btn-dark" value="Update" style="display:none;">
         </form><br>
         <h2>Expenses</h2>
         <ul id="items" class="list-group">
-
+            
         </ul>
     </div>
 </div>
