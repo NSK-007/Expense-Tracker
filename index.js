@@ -136,6 +136,7 @@ function deleteInLocalStorage(id){
     }
 }
 
+
 function loadAllItems(){
     for(x in localStorage){
         if(x==='length')
@@ -149,3 +150,4 @@ function loadAllItems(){
         }
     }
 }
+
