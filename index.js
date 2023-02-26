@@ -1,22 +1,4 @@
-//array of ids for local storage
-function getUniqueId(){
-    let id=0;
-    if(localStorage.length==0)
-        return 1;
-    let max = 1;
-    for(x in localStorage){
-        if(x=='length'){
-            // console.log("ID:"+id, parseInt(id)+1)
-            console.log(max);
-            return max+1;
-        }
-        if(max<parseInt(x))
-        max = parseInt(x);
-        
-    }
-    // console.log(id);
-    // console.log(localStorage.length)
-}
+const backend_url = 'http://localhost:8888';
 
 //submit button
 let form = document.querySelector('#form-id');
@@ -35,15 +17,17 @@ itemList.addEventListener('click', removeExpense);
 //editing expense
 itemList.addEventListener('click', editExpense);
 
+let update_btn = document.forms['form-body']['update_btn'];
+update_btn.addEventListener('click', updateAppointment);
 //add Expense
 function addExpense(e){
     e.preventDefault();
     let amount = document.forms['form-body']['amount'].value;
-    let desc = document.forms['form-body']['desc'].value;
+    let description = document.forms['form-body']['desc'].value;
     let type = document.forms['form-body']['type'].value;
     // console.log(amount, desc, type);
 
-    if(amount==null || amount=='' || desc==null || desc=='' || type==null || type==''){
+    if(amount==null || amount=='' || description==null || description=='' || type==null || type==''){
         // console.log('Empty fields');
         let err_div = document.querySelector('#error');
         err_div.className = 'alert alert-danger';
@@ -55,19 +39,29 @@ function addExpense(e){
         }, 4000);
         return;
     }
-    var id = getUniqueId();
-    let li = createNewLi(id, amount, type, desc);
-    let itemList = document.querySelector('ul');
-    itemList.appendChild(li);
     let obj = {
-        amnt : amount,
-        typ : type,
-        dsc : desc
+        amount : amount,
+        type : type,
+        description : description
     }
-    localStorage.setItem(id, JSON.stringify(obj));
-    document.forms['form-body']['amount'].value = '';
-    document.forms['form-body']['type'].value = '';
-    document.forms['form-body']['desc'].value = '';
+
+    try{
+        let asyncAddExpense = async () => {
+            let item = await axios.post(`${backend_url}/add-expense`, obj);
+            let li = createNewLi(item.data.id, item.data.amount, item.data.type, item.data.description);
+            itemList.appendChild(li);
+        }
+        asyncAddExpense();
+    }
+    catch(err){
+        console.log(err)
+    }
+
+    // localStorage.setItem(id, JSON.stringify(obj));
+
+    
+
+    document.forms['form-body'].reset();
 }
 
 //creating new List Item
@@ -103,9 +97,19 @@ function createNewLi(id, amount, type, desc){
 function removeExpense(e){
     if(e.target.classList.contains('delete')){
         let li = e.target.parentElement.parentElement;
+        const id = e.target.id[e.target.id.length-1];
         console.log(e.target.id[e.target.id.length-1]);
-        deleteInLocalStorage(e.target.id.substring(6, e.target.id.length));
         itemList.removeChild(li);
+
+        try{
+            let asyncDeleteExpense = async () => {
+                await axios.delete(`${backend_url}/delete-expense/${id}`);
+            }
+            asyncDeleteExpense();
+        }   
+        catch(err){
+            console.log(err)
+        }
     }
 }
 
@@ -113,41 +117,96 @@ function editExpense(e){
     if(e.target.id.startsWith('edit')){
         let id = e.target.id.substring(4, e.target.id.length);
         console.log(id);
-        let obj = JSON.parse(localStorage.getItem(id));
+        // let obj = JSON.parse(localStorage.getItem(id));
 
-        console.log(obj.amnt)
+        try{
+            let asyncEditExpense = async () => {
+                let item = await axios.get(`${backend_url}/${id}`);
+                console.log(item);
 
-        document.forms['form-body']['amount'].value = obj.amnt;
-        document.forms['form-body']['type'].value = obj.typ;
-        document.forms['form-body']['desc'].value = obj.dsc;
+                document.forms['form-body']['amount'].value = item.data.amount;
+                document.forms['form-body']['type'].value = item.data.type;
+                document.forms['form-body']['desc'].value = item.data.description;
+        
+                let li = e.target.parentElement.parentElement;
+                itemList.removeChild(li);
 
-        let li = e.target.parentElement.parentElement;
-        deleteInLocalStorage(e.target.id.substring(4, e.target.id.length));
-        itemList.removeChild(li);
+                document.forms['form-body']['submit_btn'].style.display = "none";
+                document.forms['form-body']['update_btn'].style.display = "block";
+                document.forms['form-body']['update_btn'].id = item.data.id;
+            }   
+            asyncEditExpense();
+        }
+        catch(err){
+            console.log(err)
+        }
     }
 }
 
-function deleteInLocalStorage(id){
-    for(x in localStorage){
-        if(parseInt(x)==parseInt(id)){
-            localStorage.removeItem(x); 
+function updateAppointment(e) {
+    try {
+        e.preventDefault();
+        // console.log(e.target.id)
+        let amount = document.forms['form-body']['amount'].value;
+        let description = document.forms['form-body']['desc'].value;
+        let type = document.forms['form-body']['type'].value;
+        // console.log(amount, desc, type);
+
+        if (amount == null || amount == '' || description == null || description == '' || type == null || type == '') {
+            // console.log('Empty fields');
+            let err_div = document.querySelector('#error');
+            err_div.className = 'alert alert-danger';
+            err_div.innerHTML = 'Please Enter all fields';
+
+            setTimeout(function () {
+                err_div.className = '';
+                err_div.innerHTML = '';
+            }, 3000);
             return;
         }
-    }
-}
+        // var id = getUniqueId();
 
-
-function loadAllItems(){
-    for(x in localStorage){
-        if(x==='length')
-            break;
-        else{
-            let obj = JSON.parse(localStorage.getItem(x));
-            // console.log(obj)
-            // console.log(parseInt(x), obj.amnt, obj.typ, obj.dsc);
-            let li = createNewLi(parseInt(x), obj.amnt, obj.typ, obj.dsc);
-            itemList.appendChild(li);
+        let obj = {
+            amount: amount,
+            type: type,
+            description: description
+        }
+        try{
+                let asyncUpdateExpense = async () => {
+                let expense = await axios.put(`${backend_url}/edit-expense/${e.target.id}`, obj)
+                
+                    var li = createNewLi(e.target.id, expense.data.amount, expense.data.type, expense.data.description);
+                    itemList.appendChild(li);
+                    document.forms['form-body'].reset();
+                    document.forms['form-body']['update_btn'].style.display = "none";
+                    document.forms['form-body']['submit_btn'].style.display = "block";
+            }
+            asyncUpdateExpense();
+        }
+        catch(err){
+            console.log(err);
         }
     }
+    catch (err) {
+        console.log(err)
+    }
 }
 
+function loadAllItems(){
+
+    try{
+        let asyncLoadAllItems = async () => {
+            let items = await axios.get(`${backend_url}/`);
+            // console.log(items.data);
+            for(let i=0;i<items.data.length;i++){
+                let li = createNewLi(items.data[i].id, items.data[i].amount, items.data[i].type, items.data[i].description);
+                itemList.appendChild(li);
+            }
+        }
+        asyncLoadAllItems();
+    }
+
+    catch(err){
+        console.log(err);
+    }
+}
